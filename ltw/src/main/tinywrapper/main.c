@@ -427,13 +427,17 @@ void glGetIntegerv(GLenum pname, GLint* data) {
             es3_functions.glGetIntegerv(pname, data);
             (*data) += current_context->nextras;
             printf("GL_NUM_EXTENSIONS: %i\n", (*data));
-            break;
+            return;
         case GL_MAX_COLOR_ATTACHMENTS:
             *data = MAX_FBTARGETS;
             return;
         case GL_MAX_DRAW_BUFFERS:
             *data = current_context->max_drawbuffers;
-            break;
+            return;
+        case GL_CONTEXT_FLAGS:
+            // You literally just can't enable robustness or debugging in GLFW
+            *data = GL_CONTEXT_FLAG_FORWARD_COMPATIBLE_BIT;
+            return;
         default:
             es3_functions.glGetIntegerv(pname, data);
     }
