@@ -9,6 +9,10 @@
 #include "env.h"
 #include <string.h>
 
+// RENMASHA: versão real do OpenGL ES detetada
+int esmajor = 0;
+int esminor = 0;
+
 thread_local context_t *current_context;
 unordered_map* context_map;
 
@@ -132,7 +136,8 @@ static void find_esversion(context_t* context) {
     const char* version = (const char*) es3_functions.glGetString(GL_VERSION);
     const char* shader_version = (const char*) es3_functions.glGetString(GL_SHADING_LANGUAGE_VERSION);
 
-    int esmajor = 0, esminor = 0, shadermajor = 3, shaderminor = 0;
+    // esmajor/esminor agora são globais, não declaramos aqui
+    int shadermajor = 3, shaderminor = 0;
     sscanf(version, " OpenGL ES %i.%i", &esmajor, &esminor);
     sscanf(shader_version, " OpenGL ES GLSL ES %i.%i", &shadermajor, &shaderminor);
     context->shader_version = shadermajor * 100 + shaderminor;
