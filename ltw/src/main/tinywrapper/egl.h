@@ -19,6 +19,10 @@
 #define MAX_TMUS 8
 #define MAX_TEXTARGETS 8
 
+// RENMASHA: versão real do OpenGL ES detetada
+extern int esmajor;
+extern int esminor;
+
 typedef struct {
     bool ready;
     GLuint indirectRenderBuffer;
