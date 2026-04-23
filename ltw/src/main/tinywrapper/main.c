@@ -20,7 +20,7 @@
 #include "libraryinternal.h"
 #include "env.h"
 
-// RENMASHA: importar as versões reais detectadas pelo egl.c
+// Usa as variáveis globais definidas em egl.c
 extern int esmajor;
 extern int esminor;
 
@@ -310,11 +310,10 @@ const GLubyte* glGetStringi(GLenum name, GLuint index) {
 const GLubyte* glGetString(GLenum name) {
     if(!current_context) return NULL;
     switch(name) {
-        // RENMASHA: reportar a versão real detectada
         case GL_VERSION: {
             static char version_str[64];
             snprintf(version_str, sizeof(version_str),
-                     "%d.%d OpenLTW (RENMASHA)", esmajor, esminor);
+                     "%d.%d OpenLTW", esmajor, esminor);
             return (const GLubyte*)version_str;
         }
         case GL_SHADING_LANGUAGE_VERSION:
@@ -426,7 +425,6 @@ void glUseProgram(GLuint program) {
 void glGetIntegerv(GLenum pname, GLint* data) {
     if(!current_context) return;
     switch (pname) {
-        // RENMASHA: usar as versões reais detectadas
         case GL_MAJOR_VERSION:
             *data = esmajor;
             return;
