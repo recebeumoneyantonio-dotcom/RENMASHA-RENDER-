@@ -64,7 +64,6 @@ void glBindFragDataLocation( 	GLuint program,
     if(!current_context) return;
     program_info_t *program_info = unordered_map_get(current_context->program_map, (void*)program);
     if(program_info == NULL || colorNumber >= MAX_DRAWBUFFERS) return;
-    // Insert binding name at the specific index
     GLchar** pname = &program_info->colorbindings[colorNumber];
     if(asprintf(pname, "%s", name) == -1) {
         *pname = NULL;
@@ -75,8 +74,6 @@ void glGetShaderiv(GLuint shader, GLuint pname, GLint* params) {
     if(!current_context) return;
     shader_info_t* shader_info = unordered_map_get(current_context->shader_map, (void*)shader);
     if(shader_info != NULL && shader_info->shader_type == GL_FRAGMENT_SHADER && pname == GL_COMPILE_STATUS) {
-        // HACK: ignore compile results for frag shaders, as some drivers may not compile them without explicit fragouts
-        // (which we add at link-time)
         *params = GL_TRUE;
         return;
     }
@@ -95,7 +92,6 @@ void glLinkProgram(GLuint program) {
     if(!current_context) return;
     program_info_t* program_info = unordered_map_get(current_context->program_map, (void*)program);
     if(program_info == NULL || program_info->frag_shader == 0) {
-        // Don't have any fragment shader to patch the locations in, fall through.
         goto fallthrough;
     }
     shader_info_t *shader = unordered_map_get(current_context->shader_map, (void*)program_info->frag_shader);
@@ -116,8 +112,6 @@ void glLinkProgram(GLuint program) {
     if(!changesMade) {
         free(new_source);
         goto fallthrough;
-    }else {
-        //printf("\n\n\nShader Result POST PATCH\n%s\n\n\n", new_source);
     }
     const GLchar* const_source = (const GLchar*)new_source;
     GLuint patched_shader = es3_functions.glCreateShader(GL_FRAGMENT_SHADER);
@@ -186,17 +180,16 @@ void glShaderSource(GLuint shader, GLsizei count, const GLchar *const*string, co
     GLchar* target_string = malloc((target_length + 1) * sizeof(GLchar));
     size_t offset = 0;
     for(GLsizei i = 0; i < count; i++) {
-        memcpy(&target_string[offset], string[i], SRC_LEN(i));
+        size_t len = SRC_LEN(i);
+        memcpy(&target_string[offset], string[i], len);
+        offset += len;  // CORREÇÃO 1: Incrementar o offset para concatenar corretamente
     }
     target_string[target_length] = 0;
 #undef SRC_LEN
 
-    // Correção 1: Desativar o otimizador de shaders para diagnóstico
-    // Usar o código original sem otimização
-    GLchar* new_source = strdup(target_string);
-
+    // CORREÇÃO 2: Transferir a posse diretamente, sem strdup e sem free duplo
     if(shader_info->source != NULL) free((void*)shader_info->source);
-    shader_info->source = new_source;
-    es3_functions.glShaderSource(shader, 1, &shader_info->source, 0);
-    free(target_string);
+    shader_info->source = target_string;
+
+    es3_functions.glShaderSource(shader, 1, (const GLchar *const*)&shader_info->source, 0);
 }
