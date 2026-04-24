@@ -189,10 +189,12 @@ void glShaderSource(GLuint shader, GLsizei count, const GLchar *const*string, co
         memcpy(&target_string[offset], string[i], SRC_LEN(i));
     }
     target_string[target_length] = 0;
-
 #undef SRC_LEN
-    GLchar* new_source = optimize_shader(target_string, shader_info->shader_type, 460, current_context->shader_version);
-    //printf("\n\n\nShader Result\n%s\n\n\n", new_source);
+
+    // Correção 1: Desativar o otimizador de shaders para diagnóstico
+    // Usar o código original sem otimização
+    GLchar* new_source = strdup(target_string);
+
     if(shader_info->source != NULL) free((void*)shader_info->source);
     shader_info->source = new_source;
     es3_functions.glShaderSource(shader, 1, &shader_info->source, 0);
